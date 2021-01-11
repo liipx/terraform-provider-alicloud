@@ -949,5 +949,14 @@ func findKmsRoleArn(client *connectivity.AliyunClient, k string) (string, error)
 	addDebug(request.GetActionName(), raw, request.RpcRequest, request)
 
 	key, _ := raw.(*kms.DescribeKeyResponse)
-	return strings.Join([]string{"acs:ram::", key.KeyMetadata.Creator, ":role/aliyunrdsinstanceencryptiondefaultrole"}, ""), nil
+
+	if key.KeyMetadata.Arn == "" {
+		return getDefaultKMSArn(key.KeyMetadata.Creator), nil
+	}
+
+	return key.KeyMetadata.Arn, nil
+}
+
+func getDefaultKMSArn(creator string) string {
+	return strings.Join([]string{"acs:ram::", creator, ":role/aliyunrdsinstanceencryptiondefaultrole"}, "")
 }
